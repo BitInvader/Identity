@@ -1,45 +1,67 @@
-(async function () {
-  const identityPoolId = "Your_IdentityPool_Id";
-  const region = "Your_Region";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AWS Identity Cognito</title>
+  <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1.50.min.js"></script>
+</head>
 
-  // Create a CognitoIdentity service object
-  const cognitoIdentity = new AWS.CognitoIdentity();
+<body>
+  <script>
+    // Configure the AWS SDK with your credentials and region
+    AWS.config.update({
+      region: 'your-region', // Replace with your AWS region
+      credentials: new AWS.CognitoIdentityCredentials({
+        IdentityPoolId: 'your-identity-pool-id' // Replace with your Identity Pool ID
+      })
+    });
 
-  // Get a Cognito Identity ID
-  await cognitoIdentity.getId(
-    {
-      IdentityPoolId: identityPoolId,
-    },
-    async (err, data) => {
-      if (err) {
-        console.error("Error getting Cognito Identity ID:", err);
-        return;
-      }
+    (async function () {
+      const identityPoolId = 'Your_IdentityPool_Id';
+      const region = 'Your_Region';
 
-      // Configure the Identity Pool ID and the Identity ID
-      AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-        IdentityPoolId: identityPoolId,
-        IdentityId: data.IdentityId,
-      });
+      // Create a CognitoIdentity service object
+      const cognitoIdentity = new AWS.CognitoIdentity();
 
-      // Get the temporary AWS credentials
-      await AWS.config.credentials.get((error) => {
-        if (error) {
-          console.error("Error getting temporary AWS credentials:", error);
-        } else {
-          let ep = new AWS.Endpoint(`translate.${region}.amazonaws.com`);
-          window.translator = new AWS.Translate({
-            endpoint: ep,
-            region: AWS.config.region,
+      // Get a Cognito Identity ID
+      await cognitoIdentity.getId(
+        {
+          IdentityPoolId: identityPoolId,
+        },
+        async (err, data) => {
+          if (err) {
+            console.error('Error getting Cognito Identity ID:', err);
+            return;
+          }
+
+          // Configure the Identity Pool ID and the Identity ID
+          AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+            IdentityPoolId: identityPoolId,
+            IdentityId: data.IdentityId,
           });
 
-          finishSetup();
+          // Get the temporary AWS credentials
+          await AWS.config.credentials.get((error) => {
+            if (error) {
+              console.error('Error getting temporary AWS credentials:', error);
+            } else {
+              let ep = new AWS.Endpoint(`translate.${region}.amazonaws.com`);
+              window.translator = new AWS.Translate({
+                endpoint: ep,
+                region: AWS.config.region,
+              });
 
-          console.log(
-            "Successfully authenticated as an unauthenticated user with Cognito"
-          );
+              finishSetup();
+
+              console.log(
+                'Successfully authenticated as an unauthenticated user with Cognito'
+              );
+            }
+          });
         }
-      });
-    }
-  );
-})();
+      );
+    })();
+  </script>
+</body>
+</html>
